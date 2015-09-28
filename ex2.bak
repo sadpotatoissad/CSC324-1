@@ -75,7 +75,22 @@ HINT:
   (define (move_function function)
      (function arg)
   )
+  ;(define values (function-evaluation functions arg))
   (sort functions #:key move_function <)
 )
 
 
+
+(define (function_evaluationss functions arg)
+  (if (eq? functions empty)
+      '()
+      (cons ((first functions) arg) (function-evaluation (rest functions) arg))
+   )
+)
+
+(define (function-evaluation functions arg)
+  (if (eq? functions empty)
+      '()
+      (cons ((first functions) arg) (function-evaluation (rest functions) arg))
+   )
+)

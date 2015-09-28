@@ -1,0 +1,171 @@
+#| Exercise 3 - More Higher-Order Functions (due October 10, noon)
+
+General exercise instructions:
+- Exercises must be done *individually*.
+- You may not import any Racket libraries, unless explicitly told to.
+- You may not use mutation or any iterative constructs (for/*).
+- You may write helper functions freely; in fact, you are encouraged
+  to do so to keep your code easy to understand.
+- Your grade will be determined by our automated testing.
+  You can find some sample tests on the course webpage.
+- Submit early and often! MarkUs is rather slow when many people
+  submit at once. It is your responsibility to make sure your work is
+  submitted on time.
+- No late submissions will be accepted!
+
+Implement the functions below. Note that these functions both
+return new functions. Don't make your code too complex; even though
+the ideas may be new, each function can be implemented in just a
+few lines of code, same as before.
+|#
+#lang racket
+(require racket/string)
+
+(provide make-splitter curry-2 curry-n)
+
+#|
+(make-splitter splitter)
+  splitter: a string
+
+  Returns a function f that takes a string s and implements the following
+  behaviour:
+    1. If 'splitter' is *not* a substring of the 's' list,
+       return #f.
+    2. Else, return a list of two elements (list before after), where
+       'before' is the list of words in 's' *before* the first occurrence
+       of 'splitter', and 'after' is the list of words in 's' *after* the
+       first occurrence of 'splitter'. Note that neither 'before' nor
+       'after' include the words from the first occurrence of 'splitter'.
+
+> (define f (make-splitter "hello world"))
+> (f "this is a hello world kind of party")
+'(("this" "is" "a") ("kind" "of" "party"))
+> (f "this is a hello not world kind of party")
+#f
+
+**You may assume that both 'splitter' and any input 's' to f are strings
+in which words are only separated by one space, and so "string-split" doesn't
+lose any information about the strings.*
+
+Hint: our goal is to have you build upon your work from Exercise 1.
+You are encouraged to reuse some of your work there as helper function(s)
+in this module.
+|#
+
+(define (make-splitter splitter)
+  (lambda (input)
+     (if (eq? #f (sublist (string-split splitter) (string-split input)))
+         #f
+         (list
+               (reverse (list-tail
+                    (reverse (string-split input))
+                    (- (length (string-split input))(sublist (string-split splitter) (string-split input)))
+                ))
+               (list-tail
+                    (string-split input)
+                    (+ (sublist (string-split splitter) (string-split input)) (length (string-split splitter)))
+               )
+         )
+     )
+  )
+)
+
+(define (sublist sub lst)
+  (if (eq? sub '())
+      0
+      (if (member (first sub) lst)
+          (if (checkRest sub (member (first sub) lst))
+              (- (length lst) (length (member (first sub) lst)))
+              (if (eq? (sublist sub (rest(member (first sub) lst))) #f)
+                  #f
+                  (+  (- (length lst) (length (member (first sub) lst)))
+                      (sublist sub (rest(member (first sub) lst)))
+                      1
+                  )
+               )
+           )
+          #f
+      )
+  )
+)
+
+(define (checkRest sub lst)
+  (if (empty? sub)
+      #t
+      (if (empty? lst)
+         #f
+         (if (string=? (first sub) (first lst))
+             (checkRest (rest sub) (rest lst))
+             #f
+         )
+      )
+   )
+)
+
+
+#|
+(curry-2 f)
+  f: a *binary* function
+  
+  Returns a unary function g that takes an argument x, and returns a
+  new unary function h that takes an argument y, such that 
+  (h y) is equivalent to (f x y).
+
+> (define (add-2-mult x y) (* (+ 2 x) y))
+> (define func (curry-2 add-2-mult))
+> ((func 4) 5)
+30
+|#
+
+(define (curry-2 f)
+    (define x null)
+    (define y null)
+    (define l (lambda (input)
+         (cond
+            [(null? x)
+               (set! x input)
+               l]
+            [(null? y)
+               (set! y input)
+              (f x y)]
+         )
+    ))
+   l
+)
+
+#|
+(curry-n f n)
+  f: a function that takes 'n' arguments
+  n: a positive integer
+
+  A generalization of curry-2, except now 'f' takes 'n' arguments; 
+  curry-n returns a unary function g that takes an argument x, 
+  and outputs a new function which is the curried version of the function 
+  (lambda (x2 ... xn) (f x x2 ... xn)). (In other words, this is a recursively-
+  defined function).
+
+> (define (f w x y) (+ w (* x y)))
+> (define func (curry-n f 3))
+> (((func 4) 6) 10)
+64
+
+Note: it is possible to define curry-2 in terms of curry-n:
+(define (curry-2 f) (curry-n f 2))
+|#
+
+;build empty list to signal when a variable has been filled in
+
+(define (curry-n f n)
+     (define lst '())
+     (define l (lambda (input)
+         (cond
+            [(< (length lst) (- n 1))
+               (set! lst (append lst (list input)))
+               l]
+            [(eq? (length lst) (- n 1))
+               (set! lst (append lst (list input)))
+               (apply f lst)]
+         )
+     ))
+     l
+)

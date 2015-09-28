@@ -1,0 +1,96 @@
+#| Exercise 2 - Higher-order functions (due Oct 3, noon)
+
+General exercise instructions:
+- Exercises must be done *individually*.
+- You may not import any Racket libraries, unless explicitly told to.
+- You may not use mutation or any iterative constructs (for/*).
+- You may write helper functions freely; in fact, you are encouraged
+  to do so to keep your code easy to understand.
+- Your grade will be determined by our automated testing.
+  You can find some sample tests on the course webpage.
+- Submit early and often! MarkUs is rather slow when many people
+  submit at once. It is your responsibility to make sure your work is
+  submitted on time.
+- No late submissions will be accepted!
+
+Implement the functions below in Racket without using explicit recursion.
+Try using higher-order list functions when you can.
+|#
+#lang racket
+
+(provide apply-functions function-sort)
+
+#| 
+(apply-functions list-of-functions arg)
+  list-of-functions: a list of unary functions
+  arg: a valid argument to each function in 'list-of-functions'
+
+  Return a list of the results of applying each function in
+  'list-of-functions' to 'arg'.
+
+> (apply-functions (list (lambda (x) (+ x x)) (lambda (x) (+ 1 3))) 10)
+'(20 4)
+|#
+
+(define (apply-functions list-of-functions arg)
+  (if (eq? list-of-functions empty)
+      '()
+      (cons ((first list-of-functions) arg) (apply-functions (rest list-of-functions) arg))
+  )
+)
+
+
+#|
+(function-sort functions arg)
+  functions: a list (f1, f2, ... fn) of unary functions
+             which map numbers to numbers
+  arg: a number
+
+  Returns a list of the same functions, sorted in increasing order of their 
+  output when given 'arg' as input.
+
+  For simplicity, you may assume that the functions in 'functions' will always
+  output different numbers when given 'arg'.
+
+> (define fs 
+    (function-sort (list (lambda (x) (+ x 3)) 
+                         (lambda (x) (- 100 x))
+                         (lambda (x) (* x 2)))
+                   5))
+> ((first fs) 6)   ; (first fs) is (lambda (x) (+ x 3))
+9
+> ((second fs) 6)  ; (second fs) is (lambda (x) (* x 2))
+12
+> ((third fs) 6)   ; (third fs) is (lambda (x) (- 100 x))
+94
+
+(function-sort (list (lambda (x) (+ x 3)) (lambda (x) (- 100 x)) (lambda (x) (* x 2))) 5)
+
+HINT:
+- the built-in "sort" function is a higher-order function, with an optional
+  function parameter #:key
+|#
+
+(define (function-sort functions arg)
+  (define (move_function function)
+     (function arg)
+  )
+  ;(define values (function-evaluation functions arg))
+  (sort functions #:key move_function <)
+)
+
+
+
+(define (function_evaluationss functions arg)
+  (if (eq? functions empty)
+      '()
+      (cons ((first functions) arg) (function-evaluation (rest functions) arg))
+   )
+)
+
+(define (function-evaluation functions arg)
+  (if (eq? functions empty)
+      '()
+      (cons ((first functions) arg) (function-evaluation (rest functions) arg))
+   )
+)

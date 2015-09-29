@@ -130,31 +130,39 @@ Read through the starter code carefully. In particular, look for:
 
 |#
 
+(define personaTerms '("vile" "villainous" "wicked" "naughty" "blackhearted" "shameless" "scoundrelous"))
+(define expressionTerms '("join'd with" "entranc'd by"))
+(define nameTerms '("I" "me" "Me" "myself" "Myself"))
 
+(define (countKeyWords mode line)
+    (cond
+          [(string=? personae mode)
+              (if (eq? empty line)
+                  0
+                  (if (eq? #f (member (first line) personaTerms))
+                      (countKeyWords mode (rest line))
+                      (+ 1 (countKeyWords mode (rest line)))
+                  )
+               )
+          ]
+          [(string=? settings mode)
+               0]
+          [(string=? "dialogue" mode)
+               0]
+     )
+
+)
 
 ;evalutes the values of each line
-(define (evaluateLine mode textList)
-  (display textList)
-     (define keyTerms '("vile" "villainous" "wicked" "naughty" "blackhearted" "shameless" "scoundrelous"))
+(define (evaluateLine mode textLine)
      (cond
           [(string=? personae mode)
-               (define pCounter 0)
-               (for ([i textList])
-                    (if (eq? #f (member i keyTerms))
-                        '()
-                        (set! pCounter (+ pCounter 1))
-                    )
-               )
-            (display pCounter)
-            (display "  ")
-            (display (length textList))
-            (display "\n")
+               (define pCounter (countKeyWords mode textLine))
                (if (> pCounter 0)
-                   (* (* (expt 2 pCounter) -1) (length textList))
-                   (length textList)
+                   (* (* (expt 2 pCounter) -1) (length textLine))
+                   (length textLine)
                )
-               
-               ]
+          ]
           [(string=? settings mode)
                0]
           [(string=? "dialogue" mode)
@@ -166,14 +174,11 @@ Read through the starter code carefully. In particular, look for:
 (define (evaluateText mode textList)
      (cond
           [(string=? personae mode)
-               (define pList '())
-               (for ([i textList])
-                 (display i)
-                 (display "\n")
-                    (set! pList (append pList (list (evaluateLine mode (rest (string-split i))))))
+               (if (eq? empty textList)
+                   '()
+                   (cons (evaluateLine mode (string-split (first textList))) (evaluateText personae (rest textList)))
                )
-               pList
-               ]
+          ]
           [(string=? settings mode)
                0]
           [(string=? "dialogue" mode)
@@ -198,10 +203,18 @@ Read through the starter code carefully. In particular, look for:
   ;(list (length dPersonae) (length set) (length dialogue))
 )
 
+
+(define (removeFirstWord textList)
+    (if (eq? empty textList)
+       '()
+       (cons (string-join (rest (string-split (first textList))) " ") (removeFirstWord (rest textList)))
+    )
+)
+
 (define (evaluate body)
     (define parsedText (bodyParser body))
-    (evaluateText personae (first parsedText))
-  
+    ;(removeFirstWord (first parsedText))
+    (evaluateText personae (removeFirstWord (first parsedText)))
 )
 
 (define s "sample.txt")

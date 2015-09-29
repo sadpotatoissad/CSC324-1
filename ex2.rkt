@@ -33,10 +33,10 @@ Try using higher-order list functions when you can.
 |#
 
 (define (apply-functions list-of-functions arg)
-  (if (eq? list-of-functions empty)
-      '()
-      (cons ((first list-of-functions) arg) (apply-functions (rest list-of-functions) arg))
+  (define (reverseFunc f)
+      (f arg)
   )
+  (map reverseFunc list-of-functions)
 )
 
 

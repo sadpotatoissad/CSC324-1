@@ -255,26 +255,13 @@ Read through the starter code carefully. In particular, look for:
     (define outputDialogueNames (cleanString "dialogue-names" (last parsedText)))
     (define outputDialogueStrings (cleanString "dialogue-words" (last parsedText)))
 
-    (display body);
-    (display "\n\n");
+    (second parsedText)
+  ;(define settingsNames)
+  ;HIII THIS A CHANGe
+  ;(define settingsValues)
 
-  
-    (display parsedText);
-    (display "\n");
-
-     (display allCharactersName);
-    (display "\n");
-      (display allCharactersValues);
-    (display "\n");
-      (display outputDialogueNames);
-    (display "\n");
-      (display outputDialogueStrings);
-    (display "\n");
 )
 
-(define (evaluates body)
-  body
-)
 
 (define s "sample.txt")
 (define d "descriptions.txt")

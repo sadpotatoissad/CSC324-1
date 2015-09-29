@@ -242,6 +242,81 @@ Read through the starter code carefully. In particular, look for:
     )
 )
 
+;from ex1
+;Finds whether a list of single word strs contains given word
+(define (contains-word strlst word)
+               (if (empty? strlst)
+                          #f
+                          (or (equal? (first strlst) word) (contains-word (rest strlst) word))))
+;from ex1 rets a lst containing only the strs that contain wrd
+(define (filter-by-word strlst wrd)
+  (if (empty? strlst)
+      empty
+      (append 
+       (if (equal? (contains-word (string-split (first strlst)) wrd) #t)
+           (list(first strlst))
+           empty)
+           (filter-by-word ( rest strlst) wrd ))))
+
+;given sub is prevent in lst
+;returns a list of #t and #f indicating whether the corresponding element of lst
+;is the first element of any occurrence of sub in lst
+(define (sublist-present-list sub lst)
+  (if (empty? lst)
+      empty
+  (append
+   (list (equal? (if (>= (length lst) (length sub)) 
+              (reverse (list-tail (reverse lst) (-(length lst) (length sub))))
+              #f) sub)) 
+     (sublist-present-list sub (rest lst)))))
+;returns #t if sub is present in lst and #f otherwise
+(define (sublist-present sub lst)
+  (if (empty? lst)
+      #f
+  (or
+   (equal? (if (>= (length lst) (length sub)) 
+              (reverse (list-tail (reverse lst) (-(length lst) (length sub))))
+              #f) sub) 
+     (sublist-present sub (rest lst)))))
+
+;locates the index +1 of the last occurrence of sub in lst
+(define(sublist-index sub lst)
+  (if (empty? lst)
+      0
+      (+(if (sublist-present sub lst) 1 0 ) (sublist-index sub (rest lst)))))
+
+;locates the index of the first #t in a list of true and false values
+(define(locate-index trueFalseLst)
+  (-(length trueFalseLst) (sublist-index(list #t)(reverse trueFalseLst))))
+
+(define(sublist sub lst)
+  ;sub is empty
+  (cond [(empty? sub) 0]
+        ;sub not in lst
+        [else (if (sublist-present sub lst)
+            (locate-index(sublist-present-list sub lst))
+            #f)]))
+
+;THE BELOW FUCTION DOES NOT WORKKKKKKK AND IS NOT DONE DONT TOUCH IT I'LL WORK ON IT 
+#|
+;creates the function for a single string instruction used for each setting  
+    (define (setting-func string)
+      ;check if call
+      (cond [(boolean to check if call) return stuff]
+         ;check if param 
+         ;this is will return a function that calls another function 
+      ;check if param (Hamlet)
+        [(sublist (list param) (string-split string)) 
+         ;check if add or mult 
+          (cond [(or (sublist (list add) (string-split string)) (sublist (list mult) (string-split string))) 
+                 ;replace all add and mult 
+                ;check if mult 
+                ])]
+         [else  (lambda()( evaluate the number)) ];this is a function with no param just a hardcoded ret value
+  ))
+  
+|#
+
 (define (evaluate body)
     ;a list of strings that is seperated into Personae, Settings and Dialogue
   
@@ -254,12 +329,11 @@ Read through the starter code carefully. In particular, look for:
     ;outputDialogueNames and outputDialogueStrings are two lists of names and string from Dialogue
     (define outputDialogueNames (cleanString "dialogue-names" (last parsedText)))
     (define outputDialogueStrings (cleanString "dialogue-words" (last parsedText)))
-
-    (second parsedText)
-  ;(define settingsNames)
-  ;HIII THIS A CHANGe
-  ;(define settingsValues)
-
+    
+    ;output settingsNames and settingsValues
+    (define settingsNames (cleanString personae (second parsedText)))
+    ;(define settingsValues) this is a list of functions 
+    (settingsNames)
 )
 
 

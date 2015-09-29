@@ -129,6 +129,7 @@ Read through the starter code carefully. In particular, look for:
   ("a" "charming" "young" "nobleman" "from" "Verona"))
 
 |#
+(define dialogue "dialogue")
 
 (define personaTerms '("vile" "villainous" "wicked" "naughty" "blackhearted" "shameless" "scoundrelous"))
 (define expressionTerms '("join'd with" "entranc'd by"))
@@ -139,7 +140,7 @@ Read through the starter code carefully. In particular, look for:
           [(string=? personae mode)
               (if (eq? empty line)
                   0
-                  (if (eq? #f (member (first line) personaTerms))
+                  (if (eq? #f (member (first line) bad-words))
                       (countKeyWords mode (rest line))
                       (+ 1 (countKeyWords mode (rest line)))
                   )
@@ -147,10 +148,9 @@ Read through the starter code carefully. In particular, look for:
           ]
           [(string=? settings mode)
                0]
-          [(string=? "dialogue" mode)
+          [(string=? dialogue mode)
                0]
      )
-
 )
 
 ;evalutes the values of each line
@@ -165,7 +165,7 @@ Read through the starter code carefully. In particular, look for:
           ]
           [(string=? settings mode)
                0]
-          [(string=? "dialogue" mode)
+          [(string=? dialogue mode)
                0]
      )
 )
@@ -181,7 +181,7 @@ Read through the starter code carefully. In particular, look for:
           ]
           [(string=? settings mode)
                0]
-          [(string=? "dialogue" mode)
+          [(string=? dialogue mode)
                0]
      )
 )
@@ -200,10 +200,9 @@ Read through the starter code carefully. In particular, look for:
 
     (define dialogue (list-tail settingBody (+ (length set) 2)))
     (list dPersonae set dialogue)
-  ;(list (length dPersonae) (length set) (length dialogue))
 )
 
-
+;removes the first word from a string
 (define (removeFirstWord textList)
     (if (eq? empty textList)
        '()
@@ -211,10 +210,70 @@ Read through the starter code carefully. In particular, look for:
     )
 )
 
+;retrieves the first word from a string
+(define (cleanString mode textList)
+    (cond
+        [(string=? personae mode)
+           (if (eq? empty textList)
+               '()
+               (cons (string-trim (first (string-split (first textList))) ",") (cleanString mode (rest textList)))
+           )
+        ]
+        [(string=? settings mode)
+             0]
+        [(string=? "dialogue-words" mode)
+           (if (eq? empty textList)
+               '()
+               (if (string=? ":" (substring (first textList) (- (string-length (first textList)) 1)))
+                   (cleanString mode (rest textList))
+                   (cons (first textList) (cleanString mode (rest textList)))
+               )
+           )
+        ]
+        [(string=? "dialogue-names" mode)
+           (if (eq? empty textList)
+               '()
+               (if (string=? ":" (substring (first textList) (- (string-length (first textList)) 1)))
+                   (cons (string-trim (first textList) ":") (cleanString mode (rest textList)))
+                   (cleanString mode (rest textList))
+               )
+           )
+        ]
+    )
+)
+
 (define (evaluate body)
-    (define parsedText (bodyParser body))
-    ;(removeFirstWord (first parsedText))
-    (evaluateText personae (removeFirstWord (first parsedText)))
+    ;a list of strings that is seperated into Personae, Settings and Dialogue
+  
+    (define parsedText (bodyParser body))   
+
+    ;'allCharactersNames' and 'allCharactersValues' are two lists of names and values from Persona
+    (define allCharactersName (cleanString personae (first parsedText)))   
+    (define allCharactersValues (evaluateText personae (removeFirstWord (first parsedText))))
+
+    ;outputDialogueNames and outputDialogueStrings are two lists of names and string from Dialogue
+    (define outputDialogueNames (cleanString "dialogue-names" (last parsedText)))
+    (define outputDialogueStrings (cleanString "dialogue-words" (last parsedText)))
+
+    (display body);
+    (display "\n\n");
+
+  
+    (display parsedText);
+    (display "\n");
+
+     (display allCharactersName);
+    (display "\n");
+      (display allCharactersValues);
+    (display "\n");
+      (display outputDialogueNames);
+    (display "\n");
+      (display outputDialogueStrings);
+    (display "\n");
+)
+
+(define (evaluates body)
+  body
 )
 
 (define s "sample.txt")

@@ -297,25 +297,94 @@ Read through the starter code carefully. In particular, look for:
             (locate-index(sublist-present-list sub lst))
             #f)]))
 
-;THE BELOW FUCTION DOES NOT WORKKKKKKK AND IS NOT DONE DONT TOUCH IT I'LL WORK ON IT 
-#|
-;creates the function for a single string instruction used for each setting  
-    (define (setting-func string)
-      ;check if call
-      (cond [(boolean to check if call) return stuff]
-         ;check if param 
-         ;this is will return a function that calls another function 
-      ;check if param (Hamlet)
-        [(sublist (list param) (string-split string)) 
-         ;check if add or mult 
-          (cond [(or (sublist (list add) (string-split string)) (sublist (list mult) (string-split string))) 
-                 ;replace all add and mult 
-                ;check if mult 
-                ])]
-         [else  (lambda()( evaluate the number)) ];this is a function with no param just a hardcoded ret value
+;helper function for counting "bad" adjectives
+
+;evaluate the number for an expression without arithmetic 
+(define(evaluate-number str-lst)
+  ;count the number of "bad" adjectives
+  (define num-bad (apply + (map length (map filter-by-word (make-list (length bad-words)str-lst) bad-words))))
+  (if (equal? num-bad 0)
+      (length str-lst)
+      (*(*(expt 2 num-bad) -1) (length str-lst))
+      ))
+
+;returns trucate list at end returns a sublist of original lst
+(define (index-to-list lst end)
+  (if (< end 0)
+      empty 
+      (cons (first lst) (index-to-list(rest lst) (- end 1)))))
+
+;returns truncated list where returned list starts from index and goes to the end
+(define (start-index-lst lst start)
+  (reverse (index-to-list (reverse lst) (- (- (length lst) start) 1))))
+
+;returns func evaluating add or mult where op-name is add or mult and operation is + or *
+;left-exp is expression on the left hand side of op if #f is entered will be found automatically same for right-exp
+(define (perform-arithmetic op-name operation left-exp right-exp str-lst)
+  (define op-index (sublist (string-split op-name) str-lst))
+  ;returns fuction that calculates given arithmetic operation
+  (cond [(equal? #f (or left-exp right-exp))
+         (lambda(str-list)
+  (operation (evaluate-number(index-to-list str-list (- op-index 1))) (evaluate-number(start-index-lst str-list (+ op-index 2)))))]
+        [(equal? #f left-exp)
+      (lambda(str-list)
+  (operation (evaluate-number(index-to-list str-list (- op-index 1))) right-exp))]
+        [(equal? #f right-exp)
+          (lambda(str-list)
+  (operation left-exp (evaluate-number(start-index-lst str-list (+ op-index 2)))))]
+  [else
+   (lambda(str-list)
+  (operation left-exp right-exp))]))
+
+;EVALUATES THE ARITHMETIC YOOOO GARY IF YOU NEED to evaluate"join'd with" or "entranc'd by" USE THIS!!!!!
+;if there is no arithmetic op in given str-lst will return the evaluated number 
+;Evaluates a string with arithmetic by seting the correct op for perform-arthmetic 
+(define(evaluate-arithmetic str-lst)
+
+  (if (equal?(or (sublist (string-split add) str-lst) (sublist (string-split mult) str-lst)) #f) ;no arithmetic op
+      (evaluate-number str-lst)
+  (if(sublist (string-split add) str-lst)
+     ((perform-arithmetic add + #f #f str-lst) str-lst)
+     ((perform-arithmetic mult * #f #f str-lst) str-lst)
+     )
   ))
+
+(define settingsFuncs empty)
+(define settingsNames empty)
+;creates the function for a single string instruction used for each setting  
   
-|#
+    (define (setting-func str-lst)
+      ;check if call
+      (cond [(and (equal?(equal?(sublist (string-split "The song of") str-lst) #f)#f) 
+                  (equal? (list-ref str-lst (+ (sublist (string-split "The Song of") str-lst) 4)) "and"))
+          ;find the called function
+         (lambda(x)
+         ((list-ref settingsFuncs (sublist (list (list-ref str-lst (+ (sublist (string-split "The Song of") str-lst) 3))) settingsNames)) ((setting-func(start-index-lst str-lst (+ (sublist (string-split "The Song of") str-lst) 5))) x)
+          ))]
+        
+        [(sublist (list param) str-lst)
+         (cond[(equal? param string)
+               ;if input string is just param
+               (lambda(x)(x))]
+              [(if (equal? (sublist (list param) str-lst) 0)
+                   (if (equal? (index-to-list (start-index-lst str-lst 1)1) (list add))
+                       ;add 
+                       (lambda(x)((perform-arithmetic add + x #f str-lst))str-lst)
+                       ;mult
+                       (lambda(x)((perform-arithmetic mult * x #f str-lst))str-lst))
+                   (if (equal? (index-to-list (start-index-lst str-lst 1)1) (list add))
+                       ;add 
+                       (lambda(x)((perform-arithmetic add + #f x str-lst))str-lst)
+                       ;mult
+                       (lambda(x)((perform-arithmetic mult * #f x str-lst))str-lst)
+                   
+         ))])]
+         [else  (lambda(x)(evaluate-arithmetic str-lst)) ];this is a function with no param just a hardcoded ret value
+  ))
+;helper used to first split strings then run setting-func
+(define (split-and-set string)
+  (setting-func (string-split string)))
+
 
 (define (evaluate body)
     ;a list of strings that is seperated into Personae, Settings and Dialogue
@@ -330,10 +399,14 @@ Read through the starter code carefully. In particular, look for:
     (define outputDialogueNames (cleanString "dialogue-names" (last parsedText)))
     (define outputDialogueStrings (cleanString "dialogue-words" (last parsedText)))
     
-    ;output settingsNames and settingsValues
-    (define settingsNames (cleanString personae (second parsedText)))
+    ;fill in values for settingsName
+    (append settingsNames (cleanString personae (second parsedText)))
     ;(define settingsValues) this is a list of functions 
-    (settingsNames)
+  
+    (define settingsFuncString (cleanString "dialogue-words" (second parsedText)))
+    ;fill in values for settingsFunc
+    (append settingsFuncs (map split-and-set settingsFuncString))
+  
 )
 
 

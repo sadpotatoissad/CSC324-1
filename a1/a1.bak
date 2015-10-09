@@ -257,15 +257,6 @@ Read through the starter code carefully. In particular, look for:
            (list(first strlst))
            empty)
            (filter-by-word ( rest strlst) wrd ))))
-;same as above but for calls
-(define (filter-by-call strlst wrd)
-  (if (empty? strlst)
-      empty
-      (append 
-       (if (equal? (contains-word (string-split (first strlst)) wrd) #t)
-           (list(first strlst))
-           empty)
-           (filter-by-word ( rest strlst) wrd ))))
 
 ;given sub is prevent in lst
 ;returns a list of #t and #f indicating whether the corresponding element of lst
@@ -345,16 +336,6 @@ Read through the starter code carefully. In particular, look for:
    (lambda(str-list)
   (operation left-exp right-exp))]))
 
-(define (find-by-first needle haystack)
-  (equal? (first haystack) needle))
-
-;strips the name for settings
-(define(remove-name namefuncstr-lst)
-  (if (empty? namefuncstr-lst )
-      empty
-   (append (list (apply string-join (list (start-index-lst(string-split (first namefuncstr-lst) )1 )))) (remove-name (rest namefuncstr-lst)))))
-
-
 ;EVALUATES THE ARITHMETIC YOOOO GARY IF YOU NEED to evaluate"join'd with" or "entranc'd by" USE THIS!!!!!
 ;if there is no arithmetic op in given str-lst will return the evaluated number 
 ;Evaluates a string with arithmetic by seting the correct op for perform-arthmetic 
@@ -367,43 +348,18 @@ Read through the starter code carefully. In particular, look for:
      ((perform-arithmetic mult * #f #f str-lst) str-lst)
      )
   ))
-(define (if-call-func str-lst)
-(and (equal?(equal?(sublist (string-split call) str-lst) #f)#f) 
-                  (equal? (list-ref str-lst (+ (sublist (string-split call) str-lst) 4)) "and")))
+
+(define settingsFuncs empty)
+(define settingsNames empty)
 ;creates the function for a single string instruction used for each setting  
-    (define (setting-func settingsFuncs-lst settingsNames-lst str-lst)
-      (if (or (and (empty? settingsFuncs-lst) (empty? settingsNames-lst)) (not(if-call-func str-lst)))
-             (cond
-        [(sublist (list param) str-lst)
-         (cond[(equal? param string)
-               ;if input string is just param
-               (lambda(x)(x))]
-              [(if (equal? (sublist (list param) str-lst) 0)
-                   (if (equal? (index-to-list (start-index-lst str-lst 1)1) (list add))
-                       ;add 
-                       (lambda(x)((perform-arithmetic add + x #f str-lst)str-lst))
-                       ;mult
-                       (lambda(x)((perform-arithmetic mult * x #f str-lst)str-lst)))
-                   (if (equal? (index-to-list (start-index-lst str-lst 1)1) (list add))
-                       ;add 
-                       (lambda(x)((perform-arithmetic add + #f x str-lst)str-lst))
-                       ;mult
-                       (lambda(x)((perform-arithmetic mult * #f x str-lst)str-lst))  ;works
-                   
-         ))])]
-         [else  (lambda(x)(evaluate-arithmetic str-lst)) ];this is a function with no param just a hardcoded ret value
-  )
-  (cond [(if-call-func str-lst)
-        ;find the called function
-         (define (find-by-first-set haystack)
-           (print "this is the str-lst")
-           (print str-lst)
-  (equal? (first haystack) (list-ref str-lst (+(sublist (string-split call) str-lst)3)) ))
-         ;THIS IS A POOR HACK FIX ITTTTTTT
-;(second (first (filter find-by-first-set settingsFuncs-lst)))
+  
+    (define (setting-func str-lst)
+      ;check if call
+      (cond [(and (equal?(equal?(sublist (string-split "The song of") str-lst) #f)#f) 
+                  (equal? (list-ref str-lst (+ (sublist (string-split "The Song of") str-lst) 4)) "and"))
+          ;find the called function
          (lambda(x)
-         ((second(first (filter find-by-first-set settingsFuncs-lst)))
-          ((setting-func empty empty (start-index-lst str-lst (+ (sublist (string-split call) str-lst) 5))) x)
+         ((list-ref settingsFuncs (sublist (list (list-ref str-lst (+ (sublist (string-split "The Song of") str-lst) 3))) settingsNames)) ((setting-func(start-index-lst str-lst (+ (sublist (string-split "The Song of") str-lst) 5))) x)
           ))]
         
         [(sublist (list param) str-lst)
@@ -413,25 +369,22 @@ Read through the starter code carefully. In particular, look for:
               [(if (equal? (sublist (list param) str-lst) 0)
                    (if (equal? (index-to-list (start-index-lst str-lst 1)1) (list add))
                        ;add 
-                       (lambda(x)((perform-arithmetic add + x #f str-lst)str-lst))
+                       (lambda(x)((perform-arithmetic add + x #f str-lst))str-lst)
                        ;mult
-                       (lambda(x)((perform-arithmetic mult * x #f str-lst)str-lst)))
+                       (lambda(x)((perform-arithmetic mult * x #f str-lst))str-lst))
                    (if (equal? (index-to-list (start-index-lst str-lst 1)1) (list add))
                        ;add 
-                       (lambda(x)((perform-arithmetic add + #f x str-lst)str-lst))
+                       (lambda(x)((perform-arithmetic add + #f x str-lst))str-lst)
                        ;mult
-                       (lambda(x)((perform-arithmetic mult * #f x str-lst)str-lst))  ;works
+                       (lambda(x)((perform-arithmetic mult * #f x str-lst))str-lst)
                    
          ))])]
          [else  (lambda(x)(evaluate-arithmetic str-lst)) ];this is a function with no param just a hardcoded ret value
-  )
-      ;check if call
-      ))
+  ))
 ;helper used to first split strings then run setting-func
-(define (split-and-set settingsFuncs-lst settingsNames-lst string)
-  (setting-func settingsFuncs-lst settingsNames-lst (string-split string)))
-(define (check-not-empty match)
-      (not (empty? match)))
+(define (split-and-set string)
+  (setting-func (string-split string)))
+
 
 (define (evaluate body)
     ;a list of strings that is seperated into Personae, Settings and Dialogue
@@ -447,79 +400,12 @@ Read through the starter code carefully. In particular, look for:
     (define outputDialogueStrings (cleanString "dialogue-words" (last parsedText)))
     
     ;fill in values for settingsName
-    (define settingsNames (cleanString personae (second (bodyParser body))))
-    (print settingsNames)
-  (print (second parsedText))
-    (define settingsFuncString( remove-name (second parsedText)))
-    ;find all non-call func
-        (define (find-call settingsFuncString-lst)
-     (if (empty? settingsFuncString-lst)
-      empty
-    (append (if(and (equal?(equal?(sublist (string-split call) (string-split (first settingsFuncString-lst))) #f)#f) 
-                  (equal? (list-ref (string-split (first settingsFuncString-lst)) (+ (sublist (string-split call) (string-split (first settingsFuncString-lst))) 4)) "and"))
-    (list #t) (list #f)) (find-call(rest settingsFuncString-lst)))))
+    (append settingsNames (cleanString personae (second parsedText)))
+    ;(define settingsValues) this is a list of functions 
   
-    ;match names
-    ;need func takes in 3 lists name, funcstrs, t-f-list
-    (define(matcher match name funcstr true-or-false)
-        (if (equal? true-or-false match)
-             (list name funcstr ) empty))
-    (define (matcher-true name funcstr true-or-false)
-        (matcher #t name funcstr true-or-false))
-    (define (matcher-false name funcstr true-or-false)
-        (matcher #f name funcstr true-or-false))
-  (print settingsFuncString)
-    ;non-calls
-    (define settingsFunc-nocall
-      (filter check-not-empty (map matcher-false settingsNames
-                         (map split-and-set
-                              (make-list (length settingsFuncString) empty)
-                              (make-list (length settingsFuncString) empty)
-                              settingsFuncString) (find-call settingsFuncString))))
-  (print settingsFunc-nocall)
-  (define settingsFunc-call 
-   (if (not (equal? (length settingsFunc-nocall) (length settingsNames)))
-  ;calls
-      ;(filter list? (map matcher-true settingsNames
-            ;a list of function correponding to the evaluated function strs
-           ;(map split-and-set
-                ;list for functions 
-            ;    (make-list (length settingsFunc-nocall)
-             ;                              settingsFunc-nocall)
-                               ;list for Names
-              ;                (make-list (length settingsNames) settingsNames)
- ;                             settingsFuncString)
-
-
-           (filter check-not-empty (map matcher-true settingsNames
-                          ;will only get first one
-                         (map split-and-set
-                              (make-list (length settingsFuncString) settingsFunc-nocall)
-                              ;(print "this is settingfunc-nocall in rep lst")
-                              ;(print (make-list (length settingsFuncString) settingsFunc-nocall))
-                              (make-list (length settingsFuncString) settingsNames)
-                              settingsFuncString) (find-call settingsFuncString)))
-            ;generate true or false list
-
-          ;  (find-call settingsFuncString)))
-    ;empty)
-    empty)
-     )
-    
-    (print settingsFunc-call)
-    ;(define settingsFuncs-nocall (map split-and-set (make-list (length settingsFuncString) empty) (make-list (length settingsFuncString) empty) settingsFuncString))
-    ;(define settingsFuncs-call (map split-and-set (make-list (length settingsFuncs-nocall) settingsFuncs-nocall ) (make-list (length settingsNames) settingsNames)  settingsFuncString)) 
-    ;(print settingsFuncString)
-    ;(print outputDialogueNames)
-    ;(print settingsNames)
-    (print "should be 16")
-    (print ((second (first settingsFunc-nocall)) 4))
-  (print "should be 20")
-  (print ((second(first settingsFunc-call))4))
-  (print settingsFunc-call)
-    ;(print settingsFuncs)
- 
-
+    (define settingsFuncString (cleanString "dialogue-words" (second parsedText)))
+    ;fill in values for settingsFunc
+    (append settingsFuncs (map split-and-set settingsFuncString))
   
 )
 

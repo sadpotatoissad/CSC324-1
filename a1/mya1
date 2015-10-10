@@ -1,0 +1,279 @@
+#| Assignment 1 - Functional Shakespeare Interpreter
+
+Read through the starter code carefully. In particular, look for:
+
+- interpret: the main function used to drive the program.
+  This is provided for you, and should not be changed.
+- evaluate: this is the main function you'll need to change.
+  Please put all helper functions you write below this one.
+  Doing so will greatly help TAs when they are marking. :)
+|#
+#lang racket
+
+; You are allowed to use all the string functions in this module.
+; You may *not* import any other modules for this assignment.
+(require racket/string)
+
+; This exports the main driver function. Used for testing purposes.
+; This is the only function you should export. Don't change this line!
+(provide interpret)
+
+;------------------------------------------------------------------------------
+; Parsing constants
+;------------------------------------------------------------------------------
+
+; Sections dividers
+(define personae "Dramatis personae")
+(define settings "Settings")
+(define finis "Finis")
+
+; Comment lines
+(define comments '("Act" "Scene"))
+
+; List of all "bad words" in a definition
+(define bad-words
+  '("vile"
+    "villainous"
+    "wicked"
+    "naughty"
+    "blackhearted"
+    "shameless"
+    "scoundrelous"))
+
+; Arithmetic
+(define add "join'd with")
+(define mult "entranc'd by")
+
+; Self-reference keywords
+(define self-refs
+  '("I"
+    "me"
+    "Me"
+    "myself"
+    "Myself"))
+
+; Function call
+(define call "The song of")
+
+; Function parameter name
+(define param "Hamlet")
+
+;------------------------------------------------------------------------------
+; Interpreter driver
+;------------------------------------------------------------------------------
+
+#|
+(interpret filename)
+  filename: a string representing the path to a FunShake file
+
+  Returns a list of numbers produced when evaluating the FunShake file.
+  You can complete this assignment without modifying this function at all,
+  but you may change the implementation if you like. Please note that you may
+  not change the interface, as this is the function that will be autotested.
+|#
+(define (interpret filename)
+  (let* ([contents (port->string (open-input-file filename))]
+         [lines (map normalize-line (string-split contents "\n"))]
+         ; Ignore title, empty, and comment lines
+         [body (remove-empty-and-comments (rest lines))])
+    (evaluate body)))
+
+#|
+(normalize-line str)
+  str: the line string to normalize
+
+  Remove trailing period and whitespace.
+|#
+(define (normalize-line str)
+  (string-trim (string-normalize-spaces (string-trim str)) "."))
+
+#|
+(remove-empty-and-comments strings)
+  strings: a list of strings
+
+  Removes all empty strings and FunShake comment strings from 'strings'.
+|#
+(define (remove-empty-and-comments strings)
+  (filter (lambda (s)
+            (and
+             (< 0 (string-length s))
+             (not (ormap (lambda (comment) (prefix? comment s))
+                         comments))))
+          strings))
+
+#|
+(prefix? s1 s2)
+  s1, s2: strings
+
+  Returns whether 's1' is a prefix of 's2'.
+|#
+(define (prefix? s1 s2)
+  (and (<= (string-length s1) (string-length s2))
+       (equal? s1 (substring s2 0 (string-length s1)))))
+
+;------------------------------------------------------------------------------
+; Main evaluation (YOUR WORK GOES HERE)
+;------------------------------------------------------------------------------
+
+#|
+(evaluate body)
+  body: a list of lines corresponding to the semantically meaningful text
+  of a FunShake file.
+
+  Returns a list of numbers produced when evaluating the FunShake file.
+  This should be the main starting point of your work! Currently,
+  it just outputs the semantically meaningful lines in the file.
+
+
+'(("a" "scoundrelous" "and" "vile" "merchant")
+  ("a" "charming" "young" "nobleman" "from" "Verona"))
+
+|#
+(define dialogue "dialogue")
+
+(define personaTerms '("vile" "villainous" "wicked" "naughty" "blackhearted" "shameless" "scoundrelous"))
+(define expressionTerms '("join'd with" "entranc'd by"))
+(define nameTerms '("I" "me" "Me" "myself" "Myself"))
+
+(define (countKeyWords mode line)
+    (cond
+          [(string=? personae mode)
+              (if (eq? empty line)
+                  0
+                  (if (eq? #f (member (first line) bad-words))
+                      (countKeyWords mode (rest line))
+                      (+ 1 (countKeyWords mode (rest line)))
+                  )
+               )
+          ]
+          [(string=? settings mode)
+               0]
+          [(string=? dialogue mode)
+               0]
+     )
+)
+
+;evalutes the values of each line
+(define (evaluateLine mode textLine)
+     (cond
+          [(string=? personae mode)
+               (define pCounter (countKeyWords mode textLine))
+               (if (> pCounter 0)
+                   (* (* (expt 2 pCounter) -1) (length textLine))
+                   (length textLine)
+               )
+          ]
+          [(string=? settings mode)
+               0]
+          [(string=? dialogue mode)
+               0]
+     )
+)
+
+;evaluate each body of text
+(define (evaluateText mode textList)
+     (cond
+          [(string=? personae mode)
+               (if (eq? empty textList)
+                   '()
+                   (cons (evaluateLine mode (string-split (first textList))) (evaluateText personae (rest textList)))
+               )
+          ]
+          [(string=? settings mode)
+               0]
+          [(string=? dialogue mode)
+               0]
+     )
+)
+
+;splits text into three bodies: personae, Settings and dialogue
+(define (bodyParser body)
+    (define dPersonae (rest (reverse (list-tail (reverse body) (length (member finis body))))))
+
+    (define settingBody (list-tail body (+ (length dPersonae) 2)))
+    (define set
+         (if (string=? settings (first (list-tail body (+ (length dPersonae) 2))))
+             (rest (reverse (list-tail (reverse settingBody) (length (member finis settingBody)))))
+             '()
+         )
+    )
+
+    (define dialogue (list-tail settingBody (+ (length set) 2)))
+    (list dPersonae set dialogue)
+)
+
+;removes the first word from a string
+(define (removeFirstWord textList)
+    (if (eq? empty textList)
+       '()
+       (cons (string-join (rest (string-split (first textList))) " ") (removeFirstWord (rest textList)))
+    )
+)
+
+;retrieves the first word from a string
+(define (cleanString mode textList)
+    (cond
+        [(string=? personae mode)
+           (if (eq? empty textList)
+               '()
+               (cons (string-trim (first (string-split (first textList))) ",") (cleanString mode (rest textList)))
+           )
+        ]
+        [(string=? settings mode)
+             0]
+        [(string=? "dialogue-words" mode)
+           (if (eq? empty textList)
+               '()
+               (if (string=? ":" (substring (first textList) (- (string-length (first textList)) 1)))
+                   (cleanString mode (rest textList))
+                   (cons (first textList) (cleanString mode (rest textList)))
+               )
+           )
+        ]
+        [(string=? "dialogue-names" mode)
+           (if (eq? empty textList)
+               '()
+               (if (string=? ":" (substring (first textList) (- (string-length (first textList)) 1)))
+                   (cons (string-trim (first textList) ":") (cleanString mode (rest textList)))
+                   (cleanString mode (rest textList))
+               )
+           )
+        ]
+    )
+)
+
+(define (evaluate body)
+    ;a list of strings that is seperated into Personae, Settings and Dialogue
+  
+    (define parsedText (bodyParser body))   
+
+    ;'allCharactersNames' and 'allCharactersValues' are two lists of names and values from Persona
+    (define allCharactersName (cleanString personae (first parsedText)))   
+    (define allCharactersValues (evaluateText personae (removeFirstWord (first parsedText))))
+
+    ;outputDialogueNames and outputDialogueStrings are two lists of names and string from Dialogue
+    (define outputDialogueNames (cleanString "dialogue-names" (last parsedText)))
+    (define outputDialogueStrings (cleanString "dialogue-words" (last parsedText)))
+
+    (display body);
+    (display "\n\n");
+
+  
+    (display parsedText);
+    (display "\n");
+
+     (display allCharactersName);
+    (display "\n");
+      (display allCharactersValues);
+    (display "\n");
+      (display outputDialogueNames);
+    (display "\n");
+      (display outputDialogueStrings);
+    (display "\n");
+)
+
+(define s "sample.txt")
+(define d "descriptions.txt")
+(define a "arithmetic.txt")
+(define n "name_lookup.txt")
+(define f "functions.txt")

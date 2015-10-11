@@ -340,11 +340,14 @@ Read through the starter code carefully. In particular, look for:
   (operation (evaluate-number(index-to-list str-list (- op-index 1))) right-exp))]
         [(equal? #f right-exp)
           (lambda(str-list)
+            (print "this is the op-index")
+            (print op-index)
   (operation left-exp (evaluate-number(start-index-lst str-list (+ op-index 2)))))]
   [else
    (lambda(str-list)
   (operation left-exp right-exp))]))
 
+;goes through a nested list, haystack and returns the list with the first element that equal to needle
 (define (find-by-first needle haystack)
   (equal? (first haystack) needle))
 
@@ -378,12 +381,13 @@ Read through the starter code carefully. In particular, look for:
          (cond[(equal? param string)
                ;if input string is just param
                (lambda(x)(x))]
-              [(if (equal? (sublist (list param) str-lst) 0)
-                   (if (equal? (index-to-list (start-index-lst str-lst 1)1) (list add))
+              [  (if (equal? (sublist (list param) str-lst) 0)
+                   (cond [(equal? (start-index-lst (index-to-list str-lst 2)1) (list add))
                        ;add 
-                       (lambda(x)((perform-arithmetic add + x #f str-lst)str-lst))
+                       (lambda(x)((perform-arithmetic add + x #f str-lst)str-lst))]
                        ;mult
-                       (lambda(x)((perform-arithmetic mult * x #f str-lst)str-lst)))
+                       [ (equal? (index-to-list (start-index-lst str-lst (-(length str-lst) 3))1) (list mult))
+                       (lambda(x)((perform-arithmetic mult * x #f str-lst)str-lst))])
                    (if (equal? (index-to-list (start-index-lst str-lst 1)1) (list add))
                        ;add 
                        (lambda(x)((perform-arithmetic add + #f x str-lst)str-lst))
@@ -399,23 +403,27 @@ Read through the starter code carefully. In particular, look for:
            (print "this is the str-lst")
            (print str-lst)
   (equal? (first haystack) (list-ref str-lst (+(sublist (string-split call) str-lst)3)) ))
-         ;THIS IS A POOR HACK FIX ITTTTTTT
+         ;THIS IS A POOR HACK FIX ITTTTTTT 
 ;(second (first (filter find-by-first-set settingsFuncs-lst)))
+         (print (second(first (filter find-by-first-set settingsFuncs-lst))))
          (lambda(x)
          ((second(first (filter find-by-first-set settingsFuncs-lst)))
-          ((setting-func empty empty (start-index-lst str-lst (+ (sublist (string-split call) str-lst) 5))) x)
-          ))]
+          (print settingsFuncs-lst)
+          (print str-lst)
+          ((setting-func empty empty (start-index-lst str-lst 5)) x))
+          )]
         
         [(sublist (list param) str-lst)
          (cond[(equal? param string)
                ;if input string is just param
                (lambda(x)(x))]
-              [(if (equal? (sublist (list param) str-lst) 0)
-                   (if (equal? (index-to-list (start-index-lst str-lst 1)1) (list add))
+              [  (if (equal? (sublist (list param) str-lst) 0)
+                   (cond [(equal? (start-index-lst (index-to-list str-lst 2)1) (list add))
                        ;add 
-                       (lambda(x)((perform-arithmetic add + x #f str-lst)str-lst))
+                       (lambda(x)((perform-arithmetic add + x #f str-lst)str-lst))]
                        ;mult
-                       (lambda(x)((perform-arithmetic mult * x #f str-lst)str-lst)))
+                       [ (equal? (index-to-list (start-index-lst str-lst (-(length str-lst) 3))1) (list mult))
+                       (lambda(x)((perform-arithmetic mult * x #f str-lst)str-lst))])
                    (if (equal? (index-to-list (start-index-lst str-lst 1)1) (list add))
                        ;add 
                        (lambda(x)((perform-arithmetic add + #f x str-lst)str-lst))
@@ -516,7 +524,7 @@ Read through the starter code carefully. In particular, look for:
     (print ((second (first settingsFunc-nocall)) 4))
   (print "should be 20")
   (print ((second(first settingsFunc-call))4))
-  (print settingsFunc-call)
+  ;(print settingsFunc-call)
     ;(print settingsFuncs)
  
 

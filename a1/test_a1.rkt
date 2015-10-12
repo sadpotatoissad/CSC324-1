@@ -1,6 +1,6 @@
 #lang plai
 
-(require "a1.rkt")
+(require "mya1.rkt")
 
 (test (interpret "sample.txt")
       '(6

@@ -382,13 +382,13 @@ Read through the starter code carefully. In particular, look for:
                ;if input string is just param
                (lambda(x)(x))]
               [  (if (equal? (sublist (list param) str-lst) 0)
-                   (cond [(equal? (start-index-lst (index-to-list str-lst 2)1) (list add))
+                   (cond [(equal? (start-index-lst (index-to-list str-lst 2)1) (string-split add))
                        ;add 
                        (lambda(x)((perform-arithmetic add + x #f str-lst)str-lst))]
                        ;mult
-                       [ (equal? (index-to-list (start-index-lst str-lst (-(length str-lst) 3))1) (list mult))
+                       [ (equal? (start-index-lst (index-to-list str-lst 2)1) (string-split mult))
                        (lambda(x)((perform-arithmetic mult * x #f str-lst)str-lst))])
-                   (if (equal? (index-to-list (start-index-lst str-lst 1)1) (list add))
+                   (if (equal? (index-to-list (start-index-lst str-lst (-(length str-lst) 3))1) (string-split add))
                        ;add 
                        (lambda(x)((perform-arithmetic add + #f x str-lst)str-lst))
                        ;mult
@@ -408,8 +408,6 @@ Read through the starter code carefully. In particular, look for:
          (print (second(first (filter find-by-first-set settingsFuncs-lst))))
          (lambda(x)
          ((second(first (filter find-by-first-set settingsFuncs-lst)))
-          (print settingsFuncs-lst)
-          (print str-lst)
           ((setting-func empty empty (start-index-lst str-lst 5)) x))
           )]
         
@@ -418,13 +416,13 @@ Read through the starter code carefully. In particular, look for:
                ;if input string is just param
                (lambda(x)(x))]
               [  (if (equal? (sublist (list param) str-lst) 0)
-                   (cond [(equal? (start-index-lst (index-to-list str-lst 2)1) (list add))
+                   (cond [(equal? (start-index-lst (index-to-list str-lst 2)1) (string-split add))
                        ;add 
                        (lambda(x)((perform-arithmetic add + x #f str-lst)str-lst))]
                        ;mult
-                       [ (equal? (index-to-list (start-index-lst str-lst (-(length str-lst) 3))1) (list mult))
+                       [ (equal? (start-index-lst (index-to-list str-lst 2)1) (string-split mult))
                        (lambda(x)((perform-arithmetic mult * x #f str-lst)str-lst))])
-                   (if (equal? (index-to-list (start-index-lst str-lst 1)1) (list add))
+                   (if (equal? (index-to-list (start-index-lst str-lst (-(length str-lst) 3))1) (string-split add))
                        ;add 
                        (lambda(x)((perform-arithmetic add + #f x str-lst)str-lst))
                        ;mult

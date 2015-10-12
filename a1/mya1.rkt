@@ -218,11 +218,27 @@ Read through the starter code carefully. In particular, look for:
          0
          (if (eq? #f (member (first line) self-refs))
              (countKeyWords mode (rest line))
-             (+ 1 (countKeyWords mode (rest line)))))
-     ]))
+             (+ 1 (countKeyWords mode (rest line)))))]
+    [else
+     (if (eq? empty line)
+         0
+         (if (string=? (first line) mode)
+             (+ 1 (countKeyWords mode (rest line)))
+             (countKeyWords mode (rest line))))]))
 
 
-;(define (calculateValuesWithOtherNames line value name))
+(define (calculateValuesWithNames textLine value charactersName charactersValues)
+  (cond
+    [(eq? empty charactersName)
+     value
+     ]
+    [else
+     (define numCharName (countKeyWords (first charactersName) textLine))
+     (define newValue (+ (- value numCharName) (* numCharName (first charactersValues))))
+     (calculateValuesWithNames textLine newValue (rest charactersName) (rest charactersValues))
+     ]
+    )
+)
 
 (define (calculateValues textLine counter)
   (define addCut (sublist (string-split add) textLine))
@@ -232,36 +248,64 @@ Read through the starter code carefully. In particular, look for:
   (define selfIndex (- (length allCharactersName) (length (member selfName allCharactersName))))
   (define selfValue (list-ref allCharactersValues selfIndex))
  
+  ;(pretty-print textLine)
+  ;(pretty-print (calculateValuesWithNames textLine textLine))
+  
    (cond
     [(and (eq? #f addCut) (eq? #f multCut))
      (define numOfSelf (countKeyWords dialogue textLine))
      (define initialValue (evaluateLine personae textLine 0))
      (define valueAfterSelf (+ (- initialValue numOfSelf) (* numOfSelf selfValue)))
-     valueAfterSelf
-     ]
+     (if  (and (eq? 1 valueAfterSelf) (eq? 0 numOfSelf))
+          (calculateValuesWithNames textLine valueAfterSelf allCharactersName allCharactersValues)
+          valueAfterSelf)]
     [(number? addCut)
+     (define valueAfterNameLeft 0)
      (define numOfSelfLeft (countKeyWords dialogue (take textLine addCut)))
      (define initialValueLeft (evaluateLine personae (take textLine addCut) 0))
      (define valueAfterSelfLeft (+ (- initialValueLeft numOfSelfLeft) (* numOfSelfLeft selfValue)))
+     (cond
+       [(and (eq? 1 valueAfterSelfLeft) (eq? 0 numOfSelfLeft))
+        (set! valueAfterNameLeft (calculateValuesWithNames (take textLine addCut) valueAfterSelfLeft allCharactersName allCharactersValues))]
+       [else
+        (set! valueAfterNameLeft valueAfterSelfLeft)])
+     (define valueAfterNameRight 0)
      (define numOfSelfRight (countKeyWords dialogue (list-tail textLine (+ 2 addCut))))
      (define initialValueRight (evaluateLine personae (list-tail textLine (+ 2 addCut)) 0))
      (define valueAfterSelfRight (+ (- initialValueRight numOfSelfRight) (* numOfSelfRight selfValue)))
-     (+ valueAfterSelfLeft valueAfterSelfRight)]
+     (cond
+       [(and (eq? 1 valueAfterSelfRight) (eq? 0 numOfSelfRight))
+        (set! valueAfterNameRight (calculateValuesWithNames (list-tail textLine (+ 2 addCut)) valueAfterSelfRight allCharactersName allCharactersValues))]
+       [else
+        (set! valueAfterNameRight valueAfterSelfRight)])
+     ;(pretty-print textLine)
+     ;(pretty-print valueAfterNameLeft)
+     ;(pretty-print valueAfterNameRight)
+     (+ valueAfterNameLeft valueAfterNameRight)]
     
     [(number? multCut)
+     (define valueAfterNameLeft 0)
      (define numOfSelfLeft (countKeyWords dialogue (take textLine multCut)))
      (define initialValueLeft (evaluateLine personae (take textLine multCut) 0))
      (define valueAfterSelfLeft (+ (- initialValueLeft numOfSelfLeft) (* numOfSelfLeft selfValue)))
+     (cond
+       [(and (eq? 1 valueAfterSelfLeft) (eq? 0 numOfSelfLeft))
+        (set! valueAfterNameLeft (calculateValuesWithNames (take textLine multCut) valueAfterSelfLeft allCharactersName allCharactersValues))]
+       [else
+        (set! valueAfterNameLeft valueAfterSelfLeft)])
+     (define valueAfterNameRight 0)
      (define numOfSelfRight (countKeyWords dialogue (list-tail textLine (+ 2 multCut))))
      (define initialValueRight (evaluateLine personae (list-tail textLine (+ 2 multCut)) 0))
      (define valueAfterSelfRight (+ (- initialValueRight numOfSelfRight) (* numOfSelfRight selfValue)))
-     
-     (pretty-print selfValue)
-     (pretty-print (take textLine multCut))
-     (pretty-print valueAfterSelfLeft)
-     (pretty-print (list-tail textLine (+ 2 multCut)))
-     (pretty-print valueAfterSelfRight)
-     (* valueAfterSelfLeft valueAfterSelfRight)
+     (cond
+       [(and (eq? 1 valueAfterSelfRight) (eq? 0 numOfSelfRight))
+        (set! valueAfterNameRight (calculateValuesWithNames (list-tail textLine (+ 2 multCut)) valueAfterSelfRight allCharactersName allCharactersValues))]
+       [else
+        (set! valueAfterNameRight valueAfterSelfRight)])
+     ;(pretty-print textLine)
+     ;(pretty-print valueAfterNameLeft)
+     ;(pretty-print valueAfterNameRight)
+     (* valueAfterNameLeft valueAfterNameRight)
      ]))
 
 ;evaluates the values of each line
